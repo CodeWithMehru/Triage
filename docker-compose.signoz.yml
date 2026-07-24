@@ -1,0 +1,12 @@
+# Reference: SigNoz self-hosted install
+# Official install (recommended):
+#   git clone https://github.com/SigNoz/signoz.git && cd signoz/deploy
+#   docker compose up -d
+#
+# After startup:
+#   SigNoz UI:        http://localhost:3301
+#   OTLP HTTP:        http://localhost:4318
+#   OTLP gRPC:        localhost:4317
+#   Query API:        http://localhost:8080
+#
+# Sentinel-OTel services send telemetry to OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318

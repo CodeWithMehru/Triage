@@ -8,7 +8,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-lg border border-zinc-800 bg-zinc-950/80 backdrop-blur-sm",
+        "relative rounded-xl border border-zinc-800/80 bg-zinc-950/70 shadow-xl backdrop-blur-md transition-all duration-200 hover:border-zinc-700/80",
         className
       )}
       {...props}
@@ -24,7 +24,10 @@ export function CardHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-b border-zinc-800 px-4 py-3", className)}
+      className={cn(
+        "flex items-center justify-between border-b border-zinc-800/80 px-4 py-3 bg-zinc-900/40 rounded-t-xl",
+        className
+      )}
       {...props}
     />
   );
@@ -37,7 +40,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "font-mono text-xs uppercase tracking-[0.2em] text-soc-cyan",
+        "font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-400/90 flex items-center gap-2",
         className
       )}
       {...props}

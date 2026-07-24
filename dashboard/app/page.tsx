@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Shield, Wifi, WifiOff } from "lucide-react";
+import { Activity, Shield, Wifi, WifiOff, Clock, RefreshCw, Database } from "lucide-react";
 import { TerminalLog, type TerminalLine } from "@/components/TerminalLog";
 import { ThreatStats } from "@/components/ThreatStats";
 import { ThreatFeed } from "@/components/ThreatFeed";
@@ -141,32 +141,40 @@ export default function DashboardPage() {
   const total = Object.values(stats).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="flex h-screen flex-col bg-soc-bg">
+    <div className="flex h-screen flex-col bg-soc-bg text-zinc-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
       <AutoBanBanner alerts={data?.autoBanAlerts ?? []} />
 
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-6 py-3">
+      {/* Top Header */}
+      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-6 py-3 shadow-md backdrop-blur-xl">
         <div className="flex items-center gap-4">
-          <Shield className="h-6 w-6 text-soc-cyan" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 via-sky-500/10 to-indigo-500/20 border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+            <Shield className="h-5 w-5 text-cyan-400" />
+          </div>
           <div>
-            <h1 className="font-mono text-lg font-bold tracking-[0.15em] text-soc-cyan">
-              TRIAGE
-            </h1>
-            <p className="text-xs text-zinc-500">
-              OTel-Powered Blue Team SOC
+            <div className="flex items-center gap-2">
+              <h1 className="font-mono text-xl font-black tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300">
+                TRIAGE
+              </h1>
+              <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.2 font-mono text-[9px] font-bold text-cyan-400">
+                SOC v2.4
+              </span>
+            </div>
+            <p className="font-mono text-[11px] text-zinc-400">
+              OTel-Powered Blue Team Security Operations
             </p>
           </div>
-          <div className="flex items-center gap-2 pl-4">
+          <div className="hidden items-center gap-2 border-l border-zinc-800/80 pl-5 sm:flex">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-soc-green opacity-60" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-soc-green" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
-            <span className="font-mono text-xs uppercase tracking-widest text-soc-green">
-              Live
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-emerald-400">
+              Active Radar
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Badge
             variant={
               level === "critical"
@@ -176,15 +184,20 @@ export default function DashboardPage() {
                   : "ok"
             }
           >
-            Threat Level: {level.toUpperCase()} ({total})
+            Level: {level.toUpperCase()} ({total})
           </Badge>
           <ClearDataButton onCleared={handleCleared} onToast={showToast} />
-          <span className="font-mono text-sm text-zinc-400">{clock} UTC+5:30</span>
+          <div className="hidden md:flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 font-mono text-xs text-zinc-300">
+            <Clock className="h-3.5 w-3.5 text-cyan-400" />
+            <span>{clock}</span>
+            <span className="text-zinc-500 text-[10px]">UTC+5:30</span>
+          </div>
         </div>
       </header>
 
+      {/* Main Grid: 3-Column Layout Preserved */}
       <main className="grid min-h-0 flex-1 grid-cols-12 gap-4 p-4">
-        <section className="col-span-12 lg:col-span-3">
+        <section className="col-span-12 min-h-0 lg:col-span-3">
           <ThreatStats stats={stats} />
         </section>
 
@@ -197,32 +210,41 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      <footer className="flex shrink-0 items-center justify-between border-t border-zinc-800 bg-zinc-950/90 px-6 py-2 font-mono text-xs text-zinc-500">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
+      {/* Footer Bar */}
+      <footer className="flex shrink-0 items-center justify-between border-t border-zinc-800/80 bg-zinc-950/90 px-6 py-2.5 font-mono text-xs text-zinc-400 backdrop-blur-md">
+        <div className="flex items-center gap-6">
+          <span className="flex items-center gap-2">
             {data?.status.signoz ? (
-              <Wifi className="h-3.5 w-3.5 text-soc-green" />
+              <Wifi className="h-3.5 w-3.5 text-emerald-400" />
             ) : (
-              <WifiOff className="h-3.5 w-3.5 text-soc-red" />
+              <WifiOff className="h-3.5 w-3.5 text-rose-400" />
             )}
-            SigNoz: {data?.status.signoz ? "connected" : "disconnected"}
+            <span className="text-zinc-400">SigNoz Collector:</span>
+            <span className={data?.status.signoz ? "text-emerald-400 font-semibold" : "text-rose-400 font-semibold"}>
+              {data?.status.signoz ? "Online" : "Disconnected"}
+            </span>
             {data?.signoz.error && (
-              <span className="text-soc-red">
-                {" "}
-                ({data.signoz.error.slice(0, 60)})
+              <span className="text-rose-400 text-[10px]">
+                ({data.signoz.error.slice(0, 50)})
               </span>
             )}
           </span>
-          <span className="flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5" />
-            Supabase: {data?.status.supabase ? "connected" : "not configured"}
+          <span className="flex items-center gap-2">
+            <Database className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="text-zinc-400">Supabase DB:</span>
+            <span className={data?.status.supabase ? "text-emerald-400 font-semibold" : "text-amber-400 font-semibold"}>
+              {data?.status.supabase ? "Connected" : "Unconfigured"}
+            </span>
           </span>
         </div>
-        <span>
-          {loading
-            ? "Syncing…"
-            : `Last sync: ${data?.fetchedAt ? new Date(data.fetchedAt).toLocaleTimeString() : "—"}`}
-        </span>
+        <div className="flex items-center gap-2 text-zinc-500">
+          <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin text-cyan-400" : ""}`} />
+          <span>
+            {loading
+              ? "Syncing telemetry…"
+              : `Synced ${data?.fetchedAt ? new Date(data.fetchedAt).toLocaleTimeString() : "—"}`}
+          </span>
+        </div>
       </footer>
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />

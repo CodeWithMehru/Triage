@@ -11,6 +11,24 @@ app.use(express.urlencoded({ extended: true, limit: "64kb" }));
 
 app.use(healthRouter);
 
+const requireApiKey = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Allow health checks to pass without authentication
+  if (req.path === "/health") {
+    next();
+    return;
+  }
+
+  const apiKey = req.headers["x-triage-api-key"];
+  if (!apiKey || typeof apiKey !== "string" || !apiKey.startsWith("trg_live_")) {
+    res.status(401).json({ error: "Unauthorized: Missing or invalid x-triage-api-key header. Expected prefix 'trg_live_'." });
+    return;
+  }
+
+  next();
+};
+
+app.use(requireApiKey);
+
 app.use(securityTrapMiddleware);
 
 app.get("/api/users", (_req, res) => {

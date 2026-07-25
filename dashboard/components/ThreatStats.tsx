@@ -1,42 +1,37 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, Code, Key, Radio, Ban, BarChart2, ShieldAlert } from "lucide-react";
+import { BarChart3, Database, Code, KeyRound, Radio, ShieldBan } from "lucide-react";
 
 interface ThreatStatsProps {
   stats: Record<string, number>;
 }
 
-const LABELS: Record<string, { label: string; color: string; icon: React.ReactNode; bg: string }> = {
+const CATEGORIES: Record<string, { label: string; colorVar: string; icon: React.ReactNode }> = {
   SQL_INJECTION: {
-    label: "SQL Injection",
-    color: "text-rose-400",
-    bg: "bg-rose-500/10 border-rose-500/30",
-    icon: <Database className="h-3.5 w-3.5 text-rose-400" />,
+    label: "SQLi",
+    colorVar: "--neon-red",
+    icon: <Database className="h-4 w-4" />,
   },
   XSS: {
-    label: "XSS Cross-Site",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/30",
-    icon: <Code className="h-3.5 w-3.5 text-amber-400" />,
+    label: "XSS",
+    colorVar: "--neon-amber",
+    icon: <Code className="h-4 w-4" />,
   },
   SENSITIVE_DATA_LEAK: {
-    label: "Sensitive Data Leak",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10 border-purple-500/30",
-    icon: <Key className="h-3.5 w-3.5 text-purple-400" />,
+    label: "Data Leak",
+    colorVar: "--neon-purple",
+    icon: <KeyRound className="h-4 w-4" />,
   },
   PORT_SCAN: {
-    label: "Honeypot Port Scan",
-    color: "text-cyan-400",
-    bg: "bg-cyan-500/10 border-cyan-500/30",
-    icon: <Radio className="h-3.5 w-3.5 text-cyan-400" />,
+    label: "Port Scan",
+    colorVar: "--neon-cyan",
+    icon: <Radio className="h-4 w-4" />,
   },
   AUTO_BAN: {
-    label: "SRE Auto-Bans",
-    color: "text-rose-400",
-    bg: "bg-rose-500/10 border-rose-500/30",
-    icon: <Ban className="h-3.5 w-3.5 text-rose-400" />,
+    label: "Auto-Ban",
+    colorVar: "--neon-red",
+    icon: <ShieldBan className="h-4 w-4" />,
   },
 };
 
@@ -44,59 +39,76 @@ export function ThreatStats({ stats }: ThreatStatsProps) {
   const total = Object.values(stats).reduce((a, b) => a + b, 0);
 
   return (
-    <Card className="h-full">
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>
-          <BarChart2 className="h-4 w-4 text-cyan-400" />
-          Threat Intel Overview
+          <BarChart3 className="h-4 w-4 text-[var(--neon-cyan)] drop-shadow-[0_0_5px_var(--neon-cyan)]" />
+          Threat Summary
         </CardTitle>
-        <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">24H Window</span>
+        <span className="font-mono text-[10px] tabular-nums font-bold tracking-widest text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/10 px-2 py-0.5 rounded-full border border-[var(--neon-cyan)]/30">24H</span>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Total Events Metric Box */}
-        <div className="relative overflow-hidden rounded-xl border border-rose-500/30 bg-gradient-to-br from-rose-950/40 via-zinc-950 to-zinc-950 p-4 text-center shadow-lg">
-          <div className="flex items-center justify-between border-b border-zinc-800/60 pb-2 mb-3">
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
-              Aggregate Detections
+      <CardContent className="flex flex-1 flex-col gap-4">
+        {/* Total metric */}
+        <div className="rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--neon-cyan)]/10 blur-[50px] pointer-events-none" />
+          <div className="flex items-baseline justify-between relative z-10">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-white/60">
+              Total Events
             </span>
-            <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+            {total > 0 && (
+              <span className="h-2 w-2 rounded-full bg-[var(--neon-red)] shadow-[0_0_10px_var(--neon-red)] animate-pulse-glow" />
+            )}
           </div>
-          <p className="text-4xl font-extrabold font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">
+          <p className="mt-2 font-mono text-5xl font-black tabular-nums text-transparent bg-clip-text bg-gradient-to-br from-white to-white/40 drop-shadow-[0_0_10px_rgba(255,255,255,0.3)] relative z-10">
             {total}
-          </p>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-            Intercepted Security Probes
           </p>
         </div>
 
-        {/* Threat Categories Breakdown */}
-        <div className="space-y-2">
-          {Object.entries(LABELS).map(([key, { label, color, bg, icon }]) => {
+        {/* Category rows */}
+        <div className="flex flex-col gap-2 relative z-10">
+          {Object.entries(CATEGORIES).map(([key, { label, colorVar, icon }]) => {
             const count = stats[key] ?? 0;
             const pct = total > 0 ? Math.round((count / total) * 100) : 0;
             return (
               <div
                 key={key}
-                className="group relative overflow-hidden rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-2.5 transition-all hover:border-zinc-700 hover:bg-zinc-900/70"
+                className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-300 hover:bg-white/5 border border-transparent hover:border-white/10"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`flex h-6 w-6 items-center justify-center rounded border ${bg}`}>
-                      {icon}
-                    </div>
-                    <span className={`font-mono text-xs font-medium ${color}`}>{label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-zinc-200">{count}</span>
-                    <span className="font-mono text-[10px] text-zinc-500 w-8 text-right">({pct}%)</span>
+                <div
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] group-hover:shadow-none"
+                  style={{
+                    color: `var(${colorVar})`,
+                    backgroundColor: `color-mix(in srgb, var(${colorVar}) 15%, transparent)`,
+                    borderColor: `color-mix(in srgb, var(${colorVar}) 30%, transparent)`,
+                    filter: `drop-shadow(0 0 5px var(${colorVar}))`,
+                  }}
+                >
+                  {icon}
+                </div>
+                <div className="flex flex-1 items-center justify-between gap-2">
+                  <span className="font-mono text-[13px] font-bold tracking-wider text-white/80 group-hover:text-white transition-colors">
+                    {label}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm font-black tabular-nums text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                      {count}
+                    </span>
+                    {total > 0 && (
+                      <span className="w-8 text-right font-mono text-[10px] tabular-nums font-bold text-white/40">
+                        {pct}%
+                      </span>
+                    )}
                   </div>
                 </div>
-                {/* Progress Mini Bar */}
-                <div className="mt-2 h-1 w-full rounded-full bg-zinc-800 overflow-hidden">
+                {/* Neon progress indicator */}
+                <div className="hidden lg:block h-1.5 w-16 overflow-hidden rounded-full bg-black/60 border border-white/5 shadow-inner">
                   <div
-                    className="h-full rounded-full bg-cyan-400 transition-all duration-500"
-                    style={{ width: `${pct}%` }}
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor: `var(${colorVar})`,
+                      boxShadow: `0 0 8px var(${colorVar})`,
+                    }}
                   />
                 </div>
               </div>

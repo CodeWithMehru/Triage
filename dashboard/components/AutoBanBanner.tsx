@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldAlert, Zap } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AutoBanAlert {
@@ -21,28 +21,24 @@ export function AutoBanBanner({ alerts }: AutoBanBannerProps) {
   const latest = alerts[0];
 
   return (
-    <div
-      className={cn(
-        "flex shrink-0 items-center justify-between border-b border-rose-500/40",
-        "bg-gradient-to-r from-rose-950/80 via-rose-900/40 to-rose-950/80 px-6 py-2.5 shadow-lg backdrop-blur-md"
-      )}
-    >
-      <div className="flex items-center gap-3">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
-          <ShieldAlert className="h-4 w-4" />
-        </div>
-        <div>
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400">
-            CRITICAL INCIDENT RESPONSE: IP AUTO-BANNED BY SRE SIDEKICK
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+      <div
+        className={cn(
+          "flex items-center gap-4 rounded-full border border-[var(--neon-red)]/30",
+          "bg-black/60 px-6 py-2.5 backdrop-blur-xl shadow-[0_8px_32px_rgba(255,7,58,0.25)]"
+        )}
+      >
+        <ShieldAlert className="h-4 w-4 shrink-0 text-[var(--neon-red)] animate-pulse-glow drop-shadow-[0_0_8px_var(--neon-red)]" />
+        <div className="flex items-center gap-3 font-mono text-sm">
+          <span className="font-black uppercase tracking-wider text-[var(--neon-red)] drop-shadow-[0_0_4px_var(--neon-red)]">
+            SRE Auto-Ban Triggered
           </span>
-          <p className="font-mono text-[11px] text-zinc-400">
-            Target IP: <span className="font-semibold text-rose-300">{latest.bannedIp}</span> · Attack Burst Rate: <span className="text-amber-300 font-semibold">{latest.attackCount}</span> / {latest.threshold} req/min
-          </p>
+          <span className="text-white/60 mx-2 text-xs">|</span>
+          <span className="text-white/80 text-xs">
+            IP <span className="font-bold text-white tracking-widest">{latest.bannedIp}</span> blocked
+            — <span className="text-[var(--neon-red)]">{latest.attackCount}/{latest.threshold}</span> attacks/min
+          </span>
         </div>
-      </div>
-      <div className="flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1 font-mono text-[11px] font-medium text-rose-300">
-        <Zap className="h-3 w-3 text-rose-400" />
-        <span>Perimeter Policy Enforced</span>
       </div>
     </div>
   );

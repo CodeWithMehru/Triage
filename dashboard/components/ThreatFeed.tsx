@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ThreatEvent } from "@/lib/supabase";
 import { formatTimestamp } from "@/lib/utils";
-import { Layers, Sparkles, Shield, Cpu, Network, CornerDownRight } from "lucide-react";
+import { Layers, Sparkles, Shield, Network } from "lucide-react";
 
 interface ThreatFeedProps {
   events: ThreatEvent[];
@@ -27,66 +27,68 @@ function TraceBlock({ event }: { event: ThreatEvent }) {
   const latency = getMeta(event, "llm_latency_ms", 42);
   const goal = event.ai_analysis ?? "Goal: Unknown";
 
+  const isCritical = event.threat_type === "AUTO_BAN" || event.severity === "CRITICAL";
+
   return (
-    <div className="group rounded-xl border border-zinc-800/80 bg-zinc-950/90 p-3 font-mono text-[11px] leading-relaxed transition-all hover:border-zinc-700/80 hover:shadow-lg">
-      <div className="mb-2 flex items-center justify-between gap-2 border-b border-zinc-900 pb-2">
-        <Badge variant={event.threat_type === "AUTO_BAN" || event.severity === "CRITICAL" ? "critical" : "warn"}>
+    <div className="group rounded-xl border border-white/5 bg-black/30 p-3 font-mono text-[12px] leading-relaxed backdrop-blur-sm transition-all hover:bg-black/50 hover:border-white/10 hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+      {/* Header row */}
+      <div className="mb-3 flex items-center justify-between">
+        <Badge variant={isCritical ? "critical" : "warn"}>
           {event.threat_type}
         </Badge>
-        <span className="text-[10px] text-zinc-500">{formatTimestamp(event.created_at)}</span>
+        <span className="tabular-nums text-[10px] font-bold text-white/40 tracking-widest">{formatTimestamp(event.created_at)}</span>
       </div>
 
-      <div className="space-y-1 text-zinc-400">
-        <div className="flex items-center gap-1.5">
-          <Layers className="h-3 w-3 text-cyan-400 shrink-0" />
-          <span className="text-zinc-500">Trace:</span>
-          <span className="text-cyan-400 font-semibold truncate tracking-tight">{traceId.slice(0, 16)}…</span>
+      {/* Metadata */}
+      <div className="flex flex-col gap-1.5 text-white/50">
+        <div className="flex items-center gap-2">
+          <Layers className="h-3.5 w-3.5 shrink-0 text-[var(--neon-cyan)]" />
+          <span className="truncate text-[var(--neon-cyan)] font-bold tabular-nums">{traceId.slice(0, 16)}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Network className="h-3 w-3 text-zinc-500 shrink-0" />
-          <span className="text-zinc-500">IP:</span>
-          <span className="text-amber-400 font-medium">{event.source_ip ?? "unknown"}</span>
+        <div className="flex items-center gap-2">
+          <Network className="h-3.5 w-3.5 shrink-0 text-white/40" />
+          <span className="font-semibold text-white/30 uppercase text-[10px] tracking-widest">IP</span>
+          <span className="text-[var(--neon-amber)] font-bold">{event.source_ip ?? "unknown"}</span>
         </div>
       </div>
 
+      {/* Span detail */}
       {event.ai_analysis ? (
-        <div className="mt-2.5 rounded-lg border border-purple-500/30 bg-gradient-to-br from-purple-950/40 via-purple-900/10 to-zinc-950 p-2.5">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-purple-300">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-              Span: ai.payload.analysis
+        <div className="mt-3 rounded-lg border border-[var(--neon-purple)]/20 bg-[var(--neon-purple)]/10 px-3 py-2">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--neon-purple)]">
+              <Sparkles className="h-3.5 w-3.5" />
+              ai.payload.analysis
             </span>
-            <span className="rounded bg-purple-500/10 border border-purple-500/30 px-1.5 py-0.2 text-[9px] text-purple-300">
-              {latency}ms
-            </span>
+            <span className="text-[10px] tabular-nums font-bold text-[var(--neon-purple)]/70">{latency}ms</span>
           </div>
-          <div className="space-y-1 font-mono text-[10px]">
-            <p className="text-zinc-400">
-              <span className="text-purple-400">llm.model</span> = <span className="text-zinc-300">"{model}"</span>
+          <div className="space-y-1 text-[11px]">
+            <p className="text-slate-50 font-medium">
+              <span className="text-[var(--neon-purple)] font-bold mr-1">model</span> {model}
             </p>
-            <p className="text-zinc-400 leading-normal">
-              <span className="text-purple-400">threat.goal</span> = <span className="text-zinc-300">"{goal}"</span>
+            <p className="text-slate-50 font-medium">
+              <span className="text-[var(--neon-purple)] font-bold mr-1">goal</span> {goal}
             </p>
           </div>
         </div>
       ) : (
-        <div className="mt-2.5 rounded-lg border border-cyan-500/20 bg-cyan-950/10 p-2.5">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-300 mb-1">
-            <Shield className="h-3.5 w-3.5 text-cyan-400" />
-            Span: security.trap
-          </div>
-          <div className="space-y-0.5 font-mono text-[10px] text-zinc-400">
-            <p><span className="text-cyan-400">pattern</span> = "{event.matched_pattern ?? "detected"}"</p>
-            <p><span className="text-cyan-400">status</span> = 403 Forbidden</p>
+        <div className="mt-3 rounded-lg border border-[var(--neon-cyan)]/20 bg-black/40 px-3 py-2">
+          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--neon-cyan)]">
+            <Shield className="h-3.5 w-3.5" />
+            security.trap
+          </span>
+          <div className="mt-1.5 space-y-1 text-[11px] text-slate-50 font-medium">
+            <p><span className="text-[var(--neon-cyan)] font-bold mr-1">pattern</span> {event.matched_pattern ?? "detected"}</p>
+            <p><span className="text-[var(--neon-cyan)] font-bold mr-1">status</span> 403</p>
           </div>
         </div>
       )}
 
       {event.payload_snippet && (
-        <div className="mt-2 flex items-center gap-1 text-[10px] text-zinc-500 truncate">
-          <CornerDownRight className="h-3 w-3 shrink-0 text-zinc-600" />
-          <span className="truncate">Payload: <code className="text-zinc-400">{event.payload_snippet}</code></span>
-        </div>
+        <p className="mt-3 truncate text-[11px] text-white/40">
+          <span className="text-white/60 font-bold uppercase tracking-widest text-[9px] mr-1">payload</span>
+          <code className="text-white/80 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">{event.payload_snippet}</code>
+        </p>
       )}
     </div>
   );
@@ -99,19 +101,20 @@ export function ThreatFeed({ events }: ThreatFeedProps) {
     <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle>
-          <Cpu className="h-4 w-4 text-cyan-400" />
-          SigNoz Live Traces
+          <Layers className="h-4 w-4 text-[var(--neon-cyan)] drop-shadow-[0_0_5px_var(--neon-cyan)]" />
+          Trace Feed
         </CardTitle>
-        <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-cyan-400">
-          {traceEvents.length} Active
-        </span>
+        {traceEvents.length > 0 && (
+          <span className="font-mono text-[10px] tabular-nums font-bold tracking-widest text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/10 px-2 py-0.5 rounded-full border border-[var(--neon-cyan)]/30">
+            {traceEvents.length}
+          </span>
+        )}
       </CardHeader>
-      <CardContent className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
+      <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {traceEvents.length === 0 ? (
-          <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/60 p-6 text-center font-mono text-xs text-zinc-500">
-            <Layers className="mx-auto h-8 w-8 text-zinc-700 mb-2 animate-pulse" />
-            <p className="text-cyan-400 font-semibold">// awaiting OTel spans…</p>
-            <p className="mt-1 text-[11px] text-zinc-500">Run demo attacks against the trap API to stream live SigNoz spans.</p>
+          <div className="flex h-full flex-col items-center justify-center py-10 text-center text-white/30">
+            <Layers className="mb-3 h-8 w-8 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] font-bold">Awaiting OTel spans</p>
           </div>
         ) : (
           traceEvents.map((event) => (

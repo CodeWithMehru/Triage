@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { cn, formatTimestamp } from "@/lib/utils";
-import { Terminal, Sparkles, Activity } from "lucide-react";
+import { Terminal, Sparkles } from "lucide-react";
 
 export interface TerminalLine {
   id: string;
@@ -18,10 +18,10 @@ interface TerminalLogProps {
   className?: string;
 }
 
-const LEVEL_STYLES: Record<TerminalLine["level"], string> = {
-  CRITICAL: "text-rose-400 bg-rose-500/10 border-rose-500/30",
-  WARN: "text-amber-400 bg-amber-500/10 border-amber-500/30",
-  INFO: "text-cyan-400 bg-cyan-500/10 border-cyan-500/30",
+const LEVEL_COLOR: Record<TerminalLine["level"], string> = {
+  CRITICAL: "text-[var(--neon-red)]",
+  WARN: "text-[var(--neon-amber)]",
+  INFO: "text-[var(--neon-cyan)]",
 };
 
 export function TerminalLog({ lines, className }: TerminalLogProps) {
@@ -41,70 +41,72 @@ export function TerminalLog({ lines, className }: TerminalLogProps) {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/90 font-mono text-xs shadow-2xl backdrop-blur-md",
+        "glass-panel flex h-full flex-col overflow-hidden rounded-xl font-mono text-[12px] shadow-[0_0_30px_rgba(0,0,0,0.8)] relative z-10",
         className
       )}
     >
-      {/* macOS Style 3-Dot Title Bar */}
-      <div className="flex items-center justify-between border-b border-zinc-800/80 bg-zinc-900/80 px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.5)] transition-transform hover:scale-110 cursor-pointer" />
-            <span className="h-3 w-3 rounded-full bg-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.5)] transition-transform hover:scale-110 cursor-pointer" />
-            <span className="h-3 w-3 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.5)] transition-transform hover:scale-110 cursor-pointer" />
+      {/* macOS Title Bar (Glass Edition) */}
+      <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f56] shadow-[0_0_8px_#ff5f56]" />
+            <span className="h-3 w-3 rounded-full bg-[#ffbd2e] shadow-[0_0_8px_#ffbd2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#27c93f] shadow-[0_0_8px_#27c93f]" />
           </div>
-          <div className="ml-3 flex items-center gap-2 border-l border-zinc-800 pl-3 text-zinc-400">
-            <Terminal className="h-3.5 w-3.5 text-cyan-400" />
-            <span className="text-xs font-semibold text-zinc-300">triage@soc — live telemetry stream</span>
+          <div className="flex items-center gap-2 text-white/70">
+            <Terminal className="h-4 w-4" />
+            <span className="text-xs font-bold tracking-widest uppercase">triage@soc — live telemetry</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-400">
-            <Activity className="h-3 w-3 animate-pulse" />
-            Active Feed
-          </span>
-          <span className="terminal-blink text-cyan-400 font-bold">█</span>
+        <div className="flex items-center gap-3">
+          {displayLines.length > 0 && (
+            <span className="text-[10px] tabular-nums text-white/50 uppercase tracking-widest font-bold">
+              {displayLines.length} events
+            </span>
+          )}
+          <span className="terminal-blink font-black text-lg text-[var(--neon-cyan)] drop-shadow-[0_0_8px_var(--neon-cyan)]">▊</span>
         </div>
       </div>
 
-      {/* Terminal Output Area */}
+      {/* Log Output */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 leading-relaxed space-y-2"
+        className="flex-1 overflow-y-auto px-4 py-3 leading-[1.75]"
       >
         {displayLines.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8 text-zinc-600 space-y-2">
-            <Terminal className="h-8 w-8 text-zinc-700 animate-pulse" />
-            <p className="font-mono text-xs text-zinc-500">
-              [INFO] Awaiting telemetry stream… trigger test attacks against the trap API or honeypot.
-            </p>
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-white/30">
+            <Terminal className="h-8 w-8 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
+            <span className="text-[11px] uppercase tracking-[0.2em] font-bold">
+              Awaiting telemetry — trigger attacks to populate
+            </span>
           </div>
         ) : (
           displayLines.map((line) => (
-            <div key={line.id} className="animate-fade-in rounded-md border border-zinc-900/60 bg-zinc-950/60 p-2 transition-colors hover:border-zinc-800">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] text-zinc-500">
+            <div key={line.id} className="animate-fade-in py-1">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="text-white/40 tabular-nums select-none font-bold">
                   [{formatTimestamp(line.timestamp)}]
                 </span>
-                <span className={cn("rounded border px-1.5 py-0.2 text-[10px] font-bold uppercase", LEVEL_STYLES[line.level])}>
+                <span className={cn("font-black tracking-wider uppercase", LEVEL_COLOR[line.level])}>
                   {line.level}
                 </span>
                 {line.source && (
-                  <span className="rounded bg-purple-950/60 border border-purple-800/40 px-1.5 py-0.2 text-[10px] text-purple-300">
+                  <span className="text-[var(--neon-purple)] font-bold drop-shadow-[0_0_5px_var(--neon-purple)] uppercase text-[10px] tracking-wider bg-[var(--neon-purple)]/10 px-1 rounded-sm">
                     {line.source}
                   </span>
                 )}
-                <span className="text-zinc-200 font-sans text-xs">{line.message}</span>
+                <span className="text-white/90 drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">{line.message}</span>
               </div>
 
               {line.aiAnalysis && (
-                <div className="mt-2 flex items-start gap-2 rounded-lg border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-purple-900/20 to-zinc-950 p-2.5 text-xs text-purple-200">
-                  <Sparkles className="h-4 w-4 shrink-0 text-purple-400 mt-0.5" />
+                <div className="mt-2 mb-2 ml-4 flex items-start gap-2.5 rounded-lg border border-[var(--neon-pink)]/20 bg-[var(--neon-pink)]/10 px-3 py-2 text-[12px] backdrop-blur-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-[var(--neon-pink)]/50" />
+                  <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--neon-pink)]" />
                   <div>
-                    <span className="font-semibold text-purple-300 text-[11px] uppercase tracking-wider block mb-0.5">
-                      Groq LLM Threat Reasoning
+                    <span className="text-[10px] font-black uppercase tracking-[0.15em] text-[var(--neon-pink)]">
+                      AI Threat Analysis
                     </span>
-                    <p className="font-sans text-zinc-300 leading-normal">
+                    <p className="mt-1 font-sans text-[12px] leading-relaxed text-slate-50 font-medium">
                       {line.aiAnalysis}
                     </p>
                   </div>

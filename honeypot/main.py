@@ -22,7 +22,7 @@ DEFAULT_PORTS = [
 servers: list[asyncio.Server] = []
 loop: asyncio.AbstractEventLoop | None = None
 
-def record_port_scan() -> None:
+def record_port_scan(source_ip: str) -> None:
     """Direct, no-bullshit synchronous DB insert."""
     try:
         url = os.getenv("SUPABASE_URL")
@@ -35,15 +35,16 @@ def record_port_scan() -> None:
             print("[supabase] ERROR: URL or KEY missing in .env")
             return
         
-        print("[supabase] Attempting direct insert to database...")
+        print(f"[supabase] Attempting direct insert to database for IP: {source_ip}...")
         supabase = create_client(url, key)
         supabase.table("threat_events").insert(
             {
                 "threat_type": "PORT_SCAN",
                 "source": "honeypot",
+                "source_ip": source_ip,
             }
         ).execute()
-        print("[supabase] 🔥 Real PORT_SCAN event saved to database!")
+        print(f"[supabase] 🔥 Real PORT_SCAN event from {source_ip} saved to database!")
     except Exception as exc:
         print(f"\n[supabase] honeypot insert failed: {exc}")
 

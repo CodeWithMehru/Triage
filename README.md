@@ -15,7 +15,22 @@ Traditional observability platforms treat security incidents as generic `403` or
 - *What specific exploit payload or secret pattern was attempted?*
 - *What was the attacker's ultimate goal?*
 
-**Triage** bridges standard APM and enterprise CyberSecurity. It transforms OpenTelemetry traces into actionable real-time threat intelligence by capturing exploit payloads, analyzing them with fast LLMs via Groq, automatically triggering perimeter IP bans via SRE Sidekick, and streaming rich telemetry directly into **SigNoz**.
+Triage bridges standard APM and enterprise CyberSecurity. It transforms OpenTelemetry traces into actionable real-time threat intelligence by capturing exploit payloads, analyzing them with fast LLMs via Groq, automatically triggering perimeter IP bans via SRE Sidekick, and streaming rich telemetry directly into **SigNoz**.
+
+### 🚀 The B2B SaaS Vision & Problem Solved
+Traditional observability focuses heavily on monitoring infrastructure—tracking CPU spikes, memory leaks, and latency degradation. However, **Triage pioneers Security Observability**. In the AI era, we leverage SigNoz not just for APM, but as a real-time SOC (Security Operations Center) to protect businesses from active cyber attacks. Triage is built as a B2B SaaS tool where companies can monitor their application's security posture from the inside out, bridging the gap between DevOps and SecOps.
+
+### 🔄 How It Works (The SaaS Onboarding Flow)
+Triage provides a frictionless, enterprise-grade onboarding journey:
+1. **Target Registration**: The client enters their website URL into our premium onboarding platform.
+2. **Key Generation**: The system dynamically generates a unique, cryptographically secure API Key (e.g., `trg_live_...`).
+3. **Agent Deployment**: The client installs our custom Node.js SDK (`@triage/otel-node`) and injects their API key into their backend configuration.
+4. **Active Defense**: The SDK instantly begins validating and streaming secure OpenTelemetry security traces to our Zero-Trust backend, which immediately populate on their live Triage Dashboard.
+
+### 🔐 Zero-Trust Architecture & Red Team Simulator
+Triage is engineered with security at its core:
+* **Zero-Trust Middleware**: The backend features robust interceptor middleware that validates all OTLP telemetry. It enforces strict API key verification, instantly rejecting any unauthorized traffic with `401 Unauthorized` responses.
+* **Red Team Simulator**: To help judges evaluate the tool seamlessly, we built a "Red Team Simulator" directly into the dashboard UI. With a single click, judges can safely proxy requests to simulate SQL Injections, Data Leaks, and trigger the SRE Auto-Ban mechanism. This instantly generates real OTel traces flowing through the backend, without requiring complex terminal commands.
 
 ---
 
@@ -33,7 +48,7 @@ Traditional observability platforms treat security incidents as generic `403` or
 
 ### 🪤 3. TCP Honeypot Trap
 * **Reconnaissance Detection**: A Python `asyncio` honeypot listening on **Port 2222** (SSH) and **Port 63790** (Redis) to catch background scanners (e.g., Nmap, Shodan).
-* **Fake Banners & Probe Tracing**: Responds with realistic service headers while outputting OpenTelemetry spans tagged `security.threat_type = "PORT_SCAN"` to trace reconnaissance activity.
+* **Fake Banners & Probe Tracing**: Responds with realistic service headers while outputting OpenTelemetry spans tagged `security.threat_type = "PORT_SCAN"` to trace reconnaissance activity. Now tracks and logs REAL attacker IPs dynamically via OS-level socket inspection, replacing dummy data for true SOC visibility.
 
 ### ⏱️ 4. Data Leak Detector & CPU Tarpit
 * **Payload Pattern Engine**: Deep regex scanner evaluating query strings, body parameters, headers, and authorization tokens for leaked API keys (`sk-...`), AWS keys, SQLi, and XSS.
@@ -42,6 +57,15 @@ Traditional observability platforms treat security incidents as generic `403` or
 ### 🖥️ 5. Cyberpunk SOC Command Center
 * **Unified Observability UI**: Next.js 16 dashboard merging real-time SigNoz telemetry traces, historical Supabase threat records, auto-scrolling terminal feeds, threat stats, and auto-ban alert streams.
 * **Database Maintenance**: Features a `POST /api/threats/clear` endpoint and header action to reset event logs during live demonstrations.
+
+### 🚀 6. SaaS Onboarding & Agent Generation
+* **Hyper-Modern iOS-Style Landing Page**: A breathtaking, multi-million-dollar AI SaaS onboarding experience. The canvas features an animated watercolor and neon-mirror background (Gemini/Apple iOS fluid glassmorphism). It utilizes zero-cringe, high-end frosted glass feature cards, dynamic ambient glow effects, and seamless viewport scrolling safety (`min-h-screen`).
+* **Dynamic SDK Provisioning**: The onboarding flow instantly provisions a unique, cryptographically secure API key (`trg_live_...`) and deploys the local `@triage/otel-node` SDK to authenticate telemetry to the Zero-Trust backend.
+
+### ⚔️ 7. Built-in Red Team Simulator
+* **Live Attack Execution**: A sleek, collapsible Red Team drawer integrated directly into the SOC dashboard.
+* **One-Click Exploits**: Allows users and evaluators to trigger SQL Injections, Data Leaks, and SRE Auto-Bans without leaving the browser.
+* **Technical Transparency**: Displays raw `curl` commands alongside action buttons so security engineers can see the exact payloads being fired.
 
 ---
 
@@ -133,6 +157,17 @@ nc localhost 2222
 for i in {1..6}; do curl -s "http://localhost:3001/api/search?q=%27%20OR%201%3D1--"; sleep 1; done
 ```
 *(Triggers 5 attacks in 60s -> SRE Sidekick issues 24h IP auto-ban & CRITICAL alert banner)*
+
+---
+
+## 🏆 Why Triage Fits the Criteria
+
+* **Potential Impact**: Solves the critical, unmet need for true application-layer security observability. It turns basic APM into an automated SIEM/SOC, protecting businesses from data breaches before they escalate.
+* **Creativity & Innovation**: Pushes boundaries by moving beyond passive monitoring. It uses OpenTelemetry traces to trigger AI-driven threat analysis (Groq) and Automated Active Defense (Self-healing Auto-Bans).
+* **Technical Excellence**: Features a custom-built OpenTelemetry SDK (`@triage/otel-node`), strict CORS proxying, secure React SSR routing, and Zero-Trust authentication middleware.
+* **Best Use of SigNoz**: Relies 100% on SigNoz for the core engine. Traces carry malicious payloads, metrics track attack velocity, and the data instantly triggers live UI alerts in the custom SOC dashboard.
+* **User Experience**: Provides a premium, dark-mode, zero-gimmick SaaS interface with frictionless onboarding and a built-in evaluator panel (Red Team Simulator).
+* **Presentation Quality**: Fully documented architecture, 1-click UI demo tooling, and clear, demonstrable business value.
 
 ---
 

@@ -8,15 +8,15 @@ export function Badge({ className, variant = "info", ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-mono font-medium uppercase tracking-wider transition-colors",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black uppercase tracking-[0.1em] leading-none transition-all duration-300",
         variant === "critical" &&
-          "border-rose-500/40 bg-rose-500/10 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.25)]",
+          "bg-[var(--neon-red)]/15 text-[var(--neon-red)] ring-1 ring-inset ring-[var(--neon-red)]/50",
         variant === "warn" &&
-          "border-amber-500/40 bg-amber-500/10 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]",
+          "bg-[var(--neon-amber)]/15 text-[var(--neon-amber)] ring-1 ring-inset ring-[var(--neon-amber)]/50",
         variant === "info" &&
-          "border-cyan-500/40 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]",
+          "bg-[var(--neon-cyan)]/15 text-[var(--neon-cyan)] ring-1 ring-inset ring-[var(--neon-cyan)]/50",
         variant === "ok" &&
-          "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
+          "bg-[var(--neon-green)]/15 text-[var(--neon-green)] ring-1 ring-inset ring-[var(--neon-green)]/50",
         className
       )}
       {...props}

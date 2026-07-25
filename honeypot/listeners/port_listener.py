@@ -29,7 +29,7 @@ async def _handle_client(
     *,
     port: int,
     service: str,
-    on_connection: Callable[[], None] | None = None,
+    on_connection: Callable[[str], None] | None = None,
 ) -> None:
     peer = writer.get_extra_info("peername")
     source_ip = peer[0] if peer else "unknown"
@@ -37,16 +37,19 @@ async def _handle_client(
     start = time.monotonic()
     payload_snippet: str | None = None
 
+    print(f"[honeypot] connection detected from {source_ip}:{source_port} -> {service}:{port}")
+
     # 🔥 Yahan se Supabase trigger fire hoga
     if on_connection is not None:
         try:
-            on_connection()
+            on_connection(source_ip)
         except Exception as exc:
             print(f"[honeypot] on_connection callback failed: {exc}")
 
     with tracer.start_as_current_span("honeypot.port_scan") as span:
         span.set_attribute("security.severity", "CRITICAL")
         span.set_attribute("security.threat_type", "PORT_SCAN")
+        span.set_attribute("security.source_ip", source_ip)
         span.set_attribute("network.peer.address", source_ip)
         span.set_attribute("network.peer.port", source_port)
         span.set_attribute("honeypot.service", service)
@@ -89,7 +92,7 @@ async def _handle_client(
 async def start_port_listener(
     port: int,
     service: str,
-    on_connection: Callable[[], None] | None = None,
+    on_connection: Callable[[str], None] | None = None,
 ) -> asyncio.Server:
     async def handler(
         reader: asyncio.StreamReader, writer: asyncio.StreamWriter

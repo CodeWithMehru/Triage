@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as net from "net";
 
 const TRAP_API = process.env.TRAP_API_URL ?? "http://localhost:3001";
-const AZURE_VM_IP = "20.235.243.29";
-const AZURE_PORT = 2222;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -58,42 +55,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "stressed", results });
     }
 
-    // 4. TCP Honeypot / Port Scan (Opens a real raw TCP socket to Azure VM port 2222)
-    if (type === "portscan" || type === "tcp" || type === "scan" || type === "ping" || type === "honeypot" || type === "tcp_scan") {
-      const banner = await new Promise((resolve, reject) => {
-        const socket = new net.Socket();
-        let connected = false;
-
-        socket.setTimeout(3000); // 3 seconds timeout
-
-        socket.connect(AZURE_PORT, AZURE_VM_IP, () => {
-          connected = true;
-        });
-
-        socket.on("data", (data) => {
-          const bannerText = data.toString().trim();
-          socket.destroy();
-          resolve(bannerText);
-        });
-
-        socket.on("timeout", () => {
-          socket.destroy();
-          reject(new Error("TCP connection timed out"));
-        });
-
-        socket.on("error", (err) => {
-          socket.destroy();
-          reject(err);
-        });
+    // 4. TCP Honeypot / Port Scan (Routed through Render Backend to bypass Vercel TCP restriction)
+    if (type === "portscan" || type === "tcp" || type === "scan" || type === "ping" || type === "honeypot") {
+      const res = await fetch(`${TRAP_API}/api/search`, {
+        method: "POST",
+        headers: validHeaders,
+        body: JSON.stringify({
+          action: "portscan",
+          target: "20.235.243.29:2222"
+        }),
       });
-
-      return NextResponse.json({ 
-        status: "fired", 
-        code: 200, 
-        target: `${AZURE_VM_IP}:${AZURE_PORT}`,
-        banner: banner,
-        message: "Real TCP socket connected to Azure honeypot successfully" 
-      });
+      return NextResponse.json({ status: "fired", code: res.status });
     }
 
     return NextResponse.json({ error: "unknown attack type", received: type }, { status: 400 });

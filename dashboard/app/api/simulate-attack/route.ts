@@ -12,7 +12,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "x-triage-api-key": "trg_live_SIMULATIONKEY_12345",
     };
 
-    // SQL Injection converted to POST so it matches backend expectations
+    // 1. SQL Injection
     if (type === "sqli") {
       const res = await fetch(`${TRAP_API}/api/search`, {
         method: "POST",
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "fired", code: res.status });
     }
 
-    // Data Leak (Already working)
+    // 2. Data Leak
     if (type === "leak") {
       const res = await fetch(`${TRAP_API}/api/search`, {
         method: "POST",
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "fired", code: res.status });
     }
 
-    // Auto-Ban converted to POST loop
+    // 3. SRE Auto-Ban
     if (type === "autoban") {
       const results: number[] = [];
       for (let i = 0; i < 6; i++) {
@@ -55,14 +55,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "stressed", results });
     }
 
-    // TCP / Port scan converted to POST
+    // 4. TCP Honeypot / Port Scan (Targeting Azure VM IP 20.235.243.29:2222 with valid backend schema)
     if (type === "portscan" || type === "tcp" || type === "scan") {
       const res = await fetch(`${TRAP_API}/api/search`, {
         method: "POST",
         headers: validHeaders,
         body: JSON.stringify({
-          action: "portscan",
-          target: "127.0.0.1:2222"
+          query: "nc 20.235.243.29 2222",
+          payload: "portscan"
         }),
       });
       return NextResponse.json({ status: "fired", code: res.status });

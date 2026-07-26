@@ -12,14 +12,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "x-triage-api-key": "trg_live_SIMULATIONKEY_12345",
     };
 
+    // SQL Injection converted to POST so it matches backend expectations
     if (type === "sqli") {
-      const res = await fetch(
-        `${TRAP_API}/api/search?q=%27%20OR%201%3D1--`,
-        { headers: validHeaders }
-      );
+      const res = await fetch(`${TRAP_API}/api/search`, {
+        method: "POST",
+        headers: validHeaders,
+        body: JSON.stringify({
+          query: "' OR 1=1--",
+          payload: "sqli"
+        }),
+      });
       return NextResponse.json({ status: "fired", code: res.status });
     }
 
+    // Data Leak (Already working)
     if (type === "leak") {
       const res = await fetch(`${TRAP_API}/api/search`, {
         method: "POST",
@@ -31,26 +37,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "fired", code: res.status });
     }
 
+    // Auto-Ban converted to POST loop
     if (type === "autoban") {
       const results: number[] = [];
       for (let i = 0; i < 6; i++) {
-        const res = await fetch(
-          `${TRAP_API}/api/search?q=%27%20OR%201%3D1--`,
-          { headers: validHeaders }
-        );
+        const res = await fetch(`${TRAP_API}/api/search`, {
+          method: "POST",
+          headers: validHeaders,
+          body: JSON.stringify({
+            query: "' OR 1=1--",
+            payload: "autoban_strike_" + i
+          }),
+        });
         results.push(res.status);
-        // 350ms delay between each strike so the rate-limiter registers them individually
         await new Promise((resolve) => setTimeout(resolve, 350));
       }
       return NextResponse.json({ status: "stressed", results });
     }
 
-    // Added handler for TCP / Port scan button so it doesn't fail
+    // TCP / Port scan converted to POST
     if (type === "portscan" || type === "tcp" || type === "scan") {
-      const res = await fetch(
-        `${TRAP_API}/api/search?q=portscan`,
-        { headers: validHeaders }
-      );
+      const res = await fetch(`${TRAP_API}/api/search`, {
+        method: "POST",
+        headers: validHeaders,
+        body: JSON.stringify({
+          action: "portscan",
+          target: "127.0.0.1:2222"
+        }),
+      });
       return NextResponse.json({ status: "fired", code: res.status });
     }
 

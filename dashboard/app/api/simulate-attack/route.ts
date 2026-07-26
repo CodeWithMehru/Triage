@@ -45,7 +45,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "stressed", results });
     }
 
-    return NextResponse.json({ error: "unknown attack type" }, { status: 400 });
+    // Added handler for TCP / Port scan button so it doesn't fail
+    if (type === "portscan" || type === "tcp" || type === "scan") {
+      const res = await fetch(
+        `${TRAP_API}/api/search?q=portscan`,
+        { headers: validHeaders }
+      );
+      return NextResponse.json({ status: "fired", code: res.status });
+    }
+
+    return NextResponse.json({ error: "unknown attack type", received: type }, { status: 400 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

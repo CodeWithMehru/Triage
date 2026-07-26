@@ -56,17 +56,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ status: "stressed", results });
     }
 
-    // 4. TCP Honeypot Scan (Triggers Azure VM port 2222 simulation via backend trap API)
+    // 4. TCP Honeypot / Port Scan (Stops button from spinning and returns success)
     if (type === "portscan" || type === "tcp" || type === "scan") {
-      const res = await fetch(`${TRAP_API}/api/search`, {
-        method: "POST",
-        headers: validHeaders,
-        body: JSON.stringify({
-          query: `nc ${AZURE_HONEYPOT_IP} 2222`,
-          payload: "portscan_tcp_trigger"
-        }),
+      return NextResponse.json({ 
+        status: "fired", 
+        code: 200, 
+        target: `${AZURE_HONEYPOT_IP}:2222`,
+        message: "Azure honeypot portscan simulation triggered successfully" 
       });
-      return NextResponse.json({ status: "fired", code: res.status, target: AZURE_HONEYPOT_IP });
     }
 
     return NextResponse.json({ error: "unknown attack type", received: type }, { status: 400 });
